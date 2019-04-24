@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {% for room in list %}
+        <a href={{url_for("User.started_room_switch",room_id=room)}} class="btn btn-lg btn-info">{{room}}</a><br>
+    {% endfor %}
+</body>
+</html>

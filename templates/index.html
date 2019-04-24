@@ -1,0 +1,106 @@
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Starter Template for Bootstrap</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+
+
+    <!-- Custom styles for this template -->
+  </head>
+
+ <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href={{url_for("index.index")}}>Hotel System</a>
+            <a class="navbar-brand" href={{url_for("User.register")}}>Register</a>
+            <a class="navbar-brand" href={{url_for("User.logout")}}>Sign Out</a>
+            <a class="navbar-brand" href={{url_for("User.user_orders")}}>My Order</a>
+        </div>
+        {% if User  %}
+          {% else %}
+        <div id="navbar" class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right" method="post" action={{url_for("User.login")}}>
+            <div class="form-group">
+              <input type="text" placeholder="username" class="form-control" name="username">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control" name="password">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+        {% endif %}
+
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+          {% if User %}
+            <h1>Welcome to the Hotel, {{User}}</h1>
+          {% else %}
+            <h1>Welcome to the Hotel</h1>
+          {% endif %}
+
+        <p><a class="btn btn-primary btn-lg" href={{url_for("order.select_roomtype")}} role="button">Click here and book a room </a></p>
+          <p><a class="btn btn-primary btn-lg" href={{url_for("comments.find_comment_by_roomtype")}} role="button">Click here and check the comments </a></p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Single Room</h2>
+          <p>Single room in the hotel services you a lot of benefits. It is guaranteed private. You will be he only person to stay in the room with everything designed only for you </p>
+
+        </div>
+        <div class="col-md-4">
+          <h2>Twin Room</h2>
+          <p>If you are not alone, Twin room in the hotel could be your first choice. It is guaranteed enough space for two people and it's quality is as good as single room</p>
+
+       </div>
+        <div class="col-md-4">
+          <h2>Executive Suite</h2>
+          <p>If you not only looking for someplace to stay, but someplace to enjoy,then Executive Suite is right for you</p>
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; 2016 Company, Inc.</p>
+      </footer>
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>

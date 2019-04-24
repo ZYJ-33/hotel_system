@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>select a room type to check comments</h1>
+    <select id="select_type" class="form-control" style="width:30%;">
+        <option>Executive Suite</option>
+        <option>Twin Room</option>
+        <option>Single Room</option>
+    </select>
+    <button id="commit_but" class="btn btn-primary">commit</button>
+    <div id="comments">
+    </div>
+</body>
+<script>
+    var ele = function (str) {
+        return document.querySelector(str)
+    }
+
+    var log =function (thing) {
+        console.log(thing)
+    }
+
+    var ajax = function (method, path, data, callback) {
+        request = new XMLHttpRequest()
+        request.open(method, path, true)
+        request.setRequestHeader("Content-Type", "application/json")
+        request.onreadystatechange = function () {
+            if (request.status==200 && request.readyState==4)
+            {
+                resp = request.response
+                if (callback != null && resp.length > 0)
+                {
+                    callback(resp)
+                }
+            }
+        }
+        if (method == "GET")
+        {
+            request.send()
+        }
+        else if(method == "POST")
+        {
+            data = JSON.stringify(data)
+            request.send(data)
+        }
+    }
+
+    var get_template = function (username, comment, oid) {
+        template = `<div class="comment", id="oid${oid}">
+        <span class="username"><p style="display: inline-block">${username}:</p> </span>
+        <span class="comment"><p style="display: inline-block">${comment}</p></span>
+        <button data-oid=${oid} class="del_but btn btn-danger">delete</button>
+        </div>
+        `
+        return template
+    }
+
+    var submit_callback = function (resp) {
+        dictlist = JSON.parse(resp)
+        log(dictlist)
+        comments = ele("#comments")
+        html = ''
+        for(i=0;i<dictlist.length;i++)
+        {
+            temp = get_template(dictlist[i]["username"],dictlist[i]["com"],dictlist[i]["oid"])
+            html += temp
+        }
+        comments.insertAdjacentHTML("beforeEnd", html)
+    }
+
+    var del_callback = function (resp) {
+        data = JSON.parse(resp)
+        comments = ele("#comments")
+        log(comments)
+        target = comments.querySelector("#oid"+data.oid)
+        log(target)
+        comments.removeChild(target)
+    }
+</script>
+<script>
+    commit_but = ele('#commit_but')
+    commit_but.addEventListener("click",function (event) {
+        comments = ele("#comments")
+        comments.innerHTML = ""
+        select = ele("#select_type")
+        room_type = select.value
+        data = {
+            room_type : room_type,
+        }
+        ajax("POST","{{url_for('comments.find_comment_by_roomtype')}}",data,submit_callback)
+    })
+    div = ele("#comments")
+    div.addEventListener("click",function (event) {
+        var tar = event.target
+        log(tar)
+        if (tar.classList.contains("del_but"))
+        {
+            id = tar.dataset.oid
+            data = {
+                oid:id
+            }
+            ajax("POST","{{url_for('admin.del_comments')}}",data, del_callback)
+        }
+    })
+</script>
+</html>

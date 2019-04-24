@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th>oid</th><th>room_id</th><th>enter_time</th><th>leave_time</th><th>create_time</th><th>order_status</th><th>cancel</th><th>switch</th><th>comment</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+    <tr>
+        <td>{{order.oid}}</td><td>{{order.room_id}}</td><td>{{order.enter_time}}</td><td>{{order.leave_time}}</td><td>{{order.create_time}}</td><td>{{order.order_status}}</td>
+        {% if order.order_status == 'pending'%}
+        <td><a href={{url_for("User.user_cancel_order",oid=order.oid)}} class="btn btn-danger">cancel</a></td>
+        <td><a href={{url_for("User.user_switch_room",oid=order.oid)}} class="btn btn-default">switch</a></td>
+        <td>not allowed</td>
+        {% endif %}
+        {% if order.order_status == 'started'%}
+        <td>not allowed</td>
+        <td><a href='{{url_for("User.user_switch_room",oid=order.oid)}}' class="btn btn-default">switch</a></td>
+        <td>not allowed</td>
+        {% endif %}
+        {% if order.order_status == 'finish'%}
+        <td>not allowed</td>
+        <td>not allowed</td>
+        <td><a href={{url_for("comments.add",oid=order.oid)}} class="btn btn-success">comment</a></td>
+        {% endif %}
+        {% if order.order_status == 'after_finish'%}
+        <td>not allowed</td>
+        <td>not allowed</td>
+        <td><a href={{url_for("comments.find_comment_by_oid",oid=order.oid)}} class="btn btn-primary">check my comment</a></td>
+        {% endif%}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

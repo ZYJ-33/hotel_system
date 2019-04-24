@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th>oid</th> <th>name</th> <th>username</th> <th>room_id</th><th>enter_time</th><th>leave_time</th><th>create_time</th><th>order_status</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+    <tr>
+        <td>{{order.oid}}</td><td>{{order.name}}</td><td>{{order.username}}</td><td>{{order.room_id}}</td><td>{{order.enter_time}}</td><td>{{order.leave_time}}</td><td>{{order.create_time}}</td><td>{{order.order_status}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>>
+</table>
+</body>
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Just to make our placeholder images work. Don't actually copy the next line! -->
+    <script src="../../assets/js/vendor/holder.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+</html>

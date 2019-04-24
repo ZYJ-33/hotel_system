@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+    <title>Starter Template for Bootstrap</title>
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+
+ <body>
+<div class="row" id="roomtype">
+    {% for row in rows %}
+        <div class="col-lg-4">
+          <img class="img-circle" src={{url_for("static.get_jpg_file",filename=row["pic_url"])}} alt="Generic placeholder image" width="140" height="140">
+          <h2>{{row["type"]}}</h2>
+          <p>{{row["descript"]}}</p>
+          <p><a class="btn btn-default target_area" href="#" role="button" data-type={{row["type"]}}>{{row["price"]}}$</a></p>
+        </div><!-- /.col-lg-4 -->
+    {% endfor %}
+</div><!-- /.row -->
+        <button type="submit" id="submit_but">submit</button>
+  </body>
+  <script>
+      var type = null
+      var select = function (ele) {
+        return document.querySelector(ele)
+    }
+    var selectall = function (ele) {
+        return document.querySelectorAll(ele)
+    }
+
+    var submit_callback = function (resp) {
+        console.log(resp)
+        resp = JSON.parse(resp)
+        console.log("hhhhh")
+        window.location.href = resp
+    }
+
+    var ajax = function (path,method,data,callback) {
+        r = new XMLHttpRequest()
+        r.open(method,path,true)
+        r.onreadystatechange = function () {
+            if(r.status == 200 & r.readyState == 4)
+            {
+                resp = r.response
+                if (resp.length > 0 & callback != null)
+                {
+                    callback(resp)
+                }
+            }
+            else if(r.status == 302 & r.readyState == 4)
+            {
+                headers = r.response.headers
+                log(headers)
+            }
+        }
+        if(method=="get")
+        {
+            r.send()
+        }
+        else if(method=="post")
+        {
+            r.setRequestHeader("Content-Type", "application/json")
+            data = JSON.stringify(data)
+            r.send(data)
+        }
+    }
+
+    var checkfor_target = function (event) {
+        tar = event.target
+        if(tar.classList.contains("target_area"))
+        {
+            type = tar.dataset.type
+            tars = selectall(".target_area")
+
+            for(i=0;i<tars.length;i++)
+            {
+
+                if (tars[i].classList.contains("btn-success"))
+                {
+
+                    tars[i].classList.replace("btn-success","btn-default")
+                }
+            }
+            tar.classList.replace("btn-default","btn-success")
+        }
+    }
+    var post_data = function () {
+        if (type == null)
+        {
+            return
+        }
+        d = {
+            room_type:type,
+        }
+        console.log(d)
+        ajax("{{url_for('order.select_roomtype')}}" , 'post', d, submit_callback)
+
+    }
+
+  </script>
+  <script>
+      div = select("#roomtype")
+      but = select("#submit_but")
+      div.addEventListener("click",checkfor_target)
+      but.addEventListener("click",post_data)
+
+  </script>
+</html>

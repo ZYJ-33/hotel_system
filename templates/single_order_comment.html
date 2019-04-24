@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+{% if result.__len__() >0 %}
+<body>
+{% for r in result %}
+<div>
+    room_type:{{r.type}}<br>
+    room_id:{{r.room_id}}
+</div>
+<div><p>____________________________________________________________________________________________________</p></div>
+<span>
+    my comment:<p>{{r.com}}</p>
+</span>
+{% endfor %}
+</body>
+{% else %}
+<body>
+<h1>your comment been delete</h1>
+</body>
+{% endif %}
+</html>

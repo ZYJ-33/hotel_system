@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>confirm the order</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<form method="post" action={{url_for("order.form_order",room_id=session.get("room_id"))}}>
+    <div class="form-group">
+    <label >room type:{{session.get("room_type")}}</label>
+   </div>
+    <div class="form-group">
+        <label >room num:{{session.get("room_id")}}</label>
+   </div>
+    <div class="form-group">
+    <label >room price:{{session.get("room_price")}}</label>
+   </div>
+    <div class="form-group">
+    <label >total price:{{session.get("total_price")}}</label>
+   </div>
+    <div class="form-group">
+    <label >start at {{session.get("enter_time")}}</label>
+   </div>
+    <div class="form-group">
+    <label >end at {{session.get("leave_time")}}</label>
+   </div>
+    <button type="submit" value="confirm" name="confirm_but" class="btn btn-lg btn-info">confirm</button>
+    <button type="submit" value="cancel" name="cancel_but" class="btn btn-lg btn-warning">cancel</button>
+</form>
+</body>
+</html>
