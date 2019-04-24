@@ -22,7 +22,7 @@
         <td>not allowed</td>
         {% endif %}
         {% if order.order_status == 'started'%}
-        <td>not allowed</td>
+        <td><a href={{url_for("User.user_checkout_in_adv",oid=order.oid)}} class="btn btn-danger">checkout</a></td>
         <td><a href='{{url_for("User.user_switch_room",oid=order.oid)}}' class="btn btn-default">switch</a></td>
         <td>not allowed</td>
         {% endif %}

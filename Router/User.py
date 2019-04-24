@@ -81,6 +81,16 @@ def user_orders():
         return redirect(url_for("index.index"))
 
 
+@blueprint.route("/center/checkout/<int:oid>", methods=["GET"])
+def user_checkout_in_adv(oid):
+    if User.hash_pass_checklogin(**session):
+        uid = session.get("uid")
+        hotel_order.check_out_adv(uid, oid)
+        return redirect(url_for("User.user_orders"))
+    else:
+        return redirect(url_for("index.index"))
+
+
 @blueprint.route("/center/cancel/<int:oid>", methods=["GET"])
 def user_cancel_order(oid):
     if User.hash_pass_checklogin(**session):

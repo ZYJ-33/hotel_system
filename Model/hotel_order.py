@@ -84,6 +84,49 @@ class hotel_order(Model):
         conn.close()
         return result[0]
 
+    @classmethod
+    def check_out_adv(cls, uid, oid):
+        conn, cursor = Model.get_cursor()
+        sql = '''
+                               UPDATE hotel_order 
+                               SET order_status = 'finish'
+                               WHERE uid = %s AND oid = %s
+                           '''
+        cursor.execute(sql, [uid, oid])
+        conn.commit()
+        sql = '''
+                              SELECT count(*) as c
+                              FROM hotel_order o1,(
+            									   SELECT room_id
+            									   FROM hotel_order o2
+            									   WHERE o2.oid = %s
+            								    ) r1
+                              WHERE o1.room_id = r1.room_id AND o1.order_status='pending';
+                    '''
+        cursor.execute(sql, [oid])
+        result = cursor.fetchall()
+        c = result[0]['c']
+        sql = '''
+                            SELECT room_id
+                       		FROM hotel_order o2
+                       		WHERE o2.oid = %s
+                             '''
+        cursor.execute(sql, [oid])
+        row = cursor.fetchall()
+
+        sql = '''
+                      UPDATE room
+                      SET room_status = {}
+                      WHERE room_id = %s
+                   '''
+        if c == 0:
+            sql = sql.format("'available'")
+            cursor.execute(sql, [row[0]['room_id']])
+        else:
+            sql = sql.format("'booked'")
+            cursor.execute(sql, [row[0]['room_id']])
+        conn.commit()
+        conn.close()
 
     @classmethod
     def set_order_abort(cls, uid, oid):
