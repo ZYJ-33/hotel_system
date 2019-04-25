@@ -15,7 +15,7 @@
     <tbody>
     {% for user in users %}
     <tr>
-        <td>{{user.uid}}</td><td>{{user.name}}</td><td>{{user.sex}}</td><td>{{user.telphone}}</td><td>{{user.username}}</td><td>{{user.email}}</td><td><a class = "btn btn-sm btn-danger" href={{url_for("admin.remove_user",uid=user.uid)}}>remove</a></td>
+        <td>{{user.uid}}</td><td>{{user.name}}</td><td>{{user.sex}}</td><td>{{user.telphone}}</td><td>{{user.username}}</td><td>{{user.email}}</td><td><a class = "btn btn-sm btn-danger" href={{url_for("admin.remove_user",uid=user.uid,token=uuid)}} >remove</a></td>
     </tr>
     {% endfor %}
     </tbody>

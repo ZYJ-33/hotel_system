@@ -12,6 +12,7 @@
         <option>Twin Room</option>
         <option>Single Room</option>
     </select>
+    <input type="hidden" id="token" value={{uuid}}>
     <button id="commit_but" class="btn btn-primary">commit</button>
     <div id="comments">
     </div>
@@ -80,6 +81,7 @@
         target = comments.querySelector("#oid"+data.oid)
         log(target)
         comments.removeChild(target)
+        window.href = '{{url_for("admin.get_comments")}}'
     }
 </script>
 <script>
@@ -101,8 +103,10 @@
         if (tar.classList.contains("del_but"))
         {
             id = tar.dataset.oid
+            token = ele("#token")
             data = {
-                oid:id
+                oid:id,
+                token:token.value,
             }
             ajax("POST","{{url_for('admin.del_comments')}}",data, del_callback)
         }

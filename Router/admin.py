@@ -10,8 +10,9 @@ from functions import jsonlify
 from Model.User import User
 from Model.hotel_order import hotel_order
 from Model.comments import comments
+from uuid import uuid4
 blueprint = Blueprint("admin", __name__)
-
+onpage_dict = {}
 
 @blueprint.route('/', methods=["GET"])
 def index():
@@ -29,8 +30,11 @@ def get_all_users():
         return redirect(url_for("index.index"))
     if not User.is_admin(**session):
         return redirect(url_for("index.index"))
+    uuid = uuid4()
+    uuid = uuid.__str__()
+    onpage_dict[uuid] = session["uid"]
     result = User.get_all_user()
-    return render_template("admin_alluser.html", users = result)
+    return render_template("admin_alluser.html", users=result, uuid=uuid)
 
 
 @blueprint.route('/allOrder', methods=["GET"])
@@ -49,8 +53,14 @@ def remove_user(uid):
         return redirect(url_for("index.index"))
     if not User.is_admin(**session):
         return redirect(url_for("index.index"))
-    User.del_user_by_id(uid)
-    return redirect(url_for("admin.get_all_users"))
+    uuid = request.args.get("token", None)
+    result_uid = onpage_dict.pop(uuid)
+    if session.get("uid") == result_uid:
+        User.del_user_by_id(uid)
+        return redirect(url_for("admin.get_all_users"))
+    else:
+        return redirect(url_for("index.index"))
+
 
 
 @blueprint.route('/comments', methods=["GET"])
@@ -59,7 +69,10 @@ def get_comments():
         return redirect(url_for("index.index"))
     if not User.is_admin(**session):
         return redirect(url_for("index.index"))
-    return render_template("admin_comments.html")
+    uuid = uuid4()
+    uuid = uuid.__str__()
+    onpage_dict[uuid] = session["uid"]
+    return render_template("admin_comments.html",uuid = uuid)
 
 
 @blueprint.route('/comments/del', methods=["POST"])
@@ -69,7 +82,9 @@ def del_comments():
     if not User.is_admin(**session):
         return redirect(url_for("index.index"))
     json = request.json
-    if json.get("oid", None) is not None:
+    uuid = json.get("token", None)
+    result_uid = onpage_dict.pop(uuid)
+    if json.get("oid", None) is not None and session["uid"] == result_uid:
         comments.del_comment_by_oid(json.get("oid"))
         return jsonlify(json)
     return
