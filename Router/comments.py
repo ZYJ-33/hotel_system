@@ -12,12 +12,13 @@ from Model.comments import comments
 from functions import jsonlify
 from Router.order import outward
 blueprint = Blueprint('comments', __name__)
+from Router.User import check_login
 
 
 # SELECT t.type, ro.type_id,ro.room_id, ro.enter_time, ro.leave_time, ro.order_status
 @blueprint.route("/add/<int:oid>", methods=['GET', 'POST'])
+@check_login
 def add(oid):
-    if User.hash_pass_checklogin(**session):
         if request.method == 'GET':
             row = hotel_order.get_order_by_oid(oid)
             row["oid"] = oid
@@ -25,22 +26,10 @@ def add(oid):
             row = outward([row])
             return render_template("finish_order_comment.html", order=row[0])
         elif request.method == 'POST':
-            com = request.form["com"]
-            room_type = session["room_type"]
-            uid = session["uid"]
-            username = session["username"]
-            d = dict(
-                com=com,
-                room_type=room_type,
-                oid=oid,
-                uid=uid,
-                username=username,
-            )
-            c = comments(d)
+            form = request.form
+            c = comments(form, oid=oid, **session)
             c.save()
             return redirect(url_for("User.user_orders"))
-    else:
-        return redirect(url_for("index.index"))
 
 
 @blueprint.route("/comment of oid/<int:oid>", methods=["GET"])
@@ -65,7 +54,7 @@ def find_comment_by_roomtype():
     elif request.method == "POST":
         json = request.json
         json["room_type"] = inward(json["room_type"].split(" ", 1)[0])
-        room_type = json.get("room_type", None)
+        room_type = json.get("room_type")
         if room_type is None:
             return redirect(url_for("find_comment_by_roomtype"))
         rows = comments.get_comments_by_type(room_type)

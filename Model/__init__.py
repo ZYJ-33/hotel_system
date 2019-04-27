@@ -12,7 +12,7 @@ class Model(object):
         para = []
         for v in self.__dict__.values():
             para.append(v)
-        print('In save', para)
+        print(para)
         cursor.execute(sql, para)
         conn.commit()
         conn.close()

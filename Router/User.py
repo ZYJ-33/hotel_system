@@ -14,17 +14,27 @@ from functions import (
     check_regi_para,
 )
 import pymysql
-from Router.order import outward
-
+import Router
+from functools import wraps
 
 blueprint = Blueprint("User", __name__)
+
+
+def check_login(fn):
+    @wraps(fn)
+    def f(*args, **kwargs):
+        if User.hash_pass_checklogin(**session):
+            return fn(*args, **kwargs)
+        else:
+            return redirect(url_for("index.index"))
+    return f
 
 
 @blueprint.route("/login", methods=["POST"])
 def login():
     if session.get("username", None) is not None:
         return redirect(url_for("index.index"))
-    if  request.method == "POST":
+    if request.method == "POST":
         form = request.form
         username = form.get("username", None)
         password = form.get("password", None)
@@ -54,17 +64,15 @@ def register():
     elif request.method == "POST":
         form = request.form
         form = todict(**form)
-        print('in register', form)
     if check_regi_para(**form):
         u = User(**form)
         try:
             u.register()
         except pymysql.err.IntegrityError as e:
             return redirect(url_for("User.register"))
-        return redirect(url_for("index.index"))
+        return redirect(url_for("User.login"))
     else:
         return redirect(url_for("User.register"))
-
 
 
 @blueprint.route("/center", methods=["GET"])
@@ -73,38 +81,32 @@ def center_index():
 
 
 @blueprint.route("/center/orders", methods=["GET"])
+@check_login
 def user_orders():
-    if User.hash_pass_checklogin(**session):
-        rows = hotel_order.get_order_by_uid(session.get("uid"))
-        return render_template("user_center_order.html", orders=rows)
-    else:
-        return redirect(url_for("index.index"))
-
-
-@blueprint.route("/center/checkout/<int:oid>", methods=["GET"])
-def user_checkout_in_adv(oid):
-    if User.hash_pass_checklogin(**session):
-        uid = session.get("uid")
-        hotel_order.check_out_adv(uid, oid)
-        return redirect(url_for("User.user_orders"))
-    else:
-        return redirect(url_for("index.index"))
+    rows = hotel_order.get_order_by_uid(session.get("uid"))
+    return render_template("user_center_order.html", orders=rows)
 
 
 @blueprint.route("/center/cancel/<int:oid>", methods=["GET"])
-def user_cancel_order(oid):
-    if User.hash_pass_checklogin(**session):
-        uid = session.get("uid")
-        print("oid", oid)
-        hotel_order.set_order_abort(uid, oid)
-        return redirect(url_for("User.user_orders"))
-    else:
-        return redirect(url_for("index.index"))
+@check_login
+def user_pending_cancel_order(oid):
+    uid = session.get("uid")
+    print("oid", oid)
+    hotel_order.set_order_abort(uid, oid)
+    return redirect(url_for("User.user_orders"))
+
+
+@blueprint.route("/center/checkout/<int:oid>", methods=["GET"])
+@check_login
+def user_checkout_in_adv(oid):
+    uid = session.get("uid")
+    hotel_order.check_out_adv(uid, oid)
+    return redirect(url_for("User.user_orders"))
 
 
 @blueprint.route("/center/switch/<int:oid>", methods=["GET"])
+@check_login
 def user_switch_room(oid):
-    if User.hash_pass_checklogin(**session):
         order = hotel_order.get_order_by_oid(oid)
         order["enter_time"] = order["enter_time"].strftime("%Y-%m-%d")
         order["leave_time"] = order["leave_time"].strftime("%Y-%m-%d")
@@ -117,7 +119,7 @@ def user_switch_room(oid):
             if session.get("oid", None) is None:
                 session["oid"] = oid
             rows = room.get_all_roomtype()
-            rows = outward(rows)
+            rows = Router.order.outward(rows)
             return render_template("pending_order_select_roomtype.html", rows=rows)
         else:
             list = room.get_room_for_started(order["type"], order["enter_time"], order["leave_time"])
@@ -126,19 +128,14 @@ def user_switch_room(oid):
             session["enter_time"] = order["enter_time"]
             session["leave_time"] = order["leave_time"]
             return render_template("room_for_started.html", list=list)
-    else:
-        return redirect(url_for("index.index"))
 
 
 @blueprint.route("/start_room_switch/<int:room_id>", methods=["GET"])
+@check_login
 def started_room_switch(room_id):
-    if User.hash_pass_checklogin(**session):
-        old_room_id = session.pop("old_room_id")
-        oid = session.pop("started_oid")
-        enter_time = session.pop("enter_time")
-        leave_time = session.pop("leave_time")
-        room.started_room_switch(old_room_id, room_id, oid, enter_time, leave_time)
-        return redirect(url_for("User.user_orders"))
-    else:
-        return redirect(url_for("index.index"))
-
+    old_room_id = session.pop("old_room_id")
+    oid = session.pop("started_oid")
+    enter_time = session.pop("enter_time")
+    leave_time = session.pop("leave_time")
+    room.started_room_switch(old_room_id, room_id, oid, enter_time, leave_time)
+    return redirect(url_for("User.user_orders"))

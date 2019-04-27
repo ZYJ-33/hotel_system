@@ -8,14 +8,17 @@ from flask import (
 )
 from datetime import datetime
 from functions import get_time
+
 blueprint = Blueprint("order", __name__)
 from Model.User import User
 from Model.Room import room
 from Model.hotel_order import hotel_order
 from functions import jsonlify
+from Router.User import check_login
+
 
 def check_book_data(jsondata, session):
-    if session.get("pending_switch", None)is not None:
+    if session.get("pending_switch", None) is not None:
         return check_session_data(session, jsondata)
     else:
         return check_data(jsondata)
@@ -53,6 +56,7 @@ def check_data(data):
         return False
     return True
 
+
 def outward(rows):
     for row in rows:
         if row["type"] == 'A':
@@ -62,6 +66,7 @@ def outward(rows):
         elif row["type"] == 'C':
             row["type"] = 'Single Room'
     return rows
+
 
 def inward(type):
     if type == "Executive":
@@ -74,9 +79,8 @@ def inward(type):
 
 
 @blueprint.route("/roomtype", methods=["GET", "POST"])
+@check_login
 def select_roomtype():
-    if session.get("username", None) is None:
-        return redirect(url_for("index.index"))
     if request.method == "GET":
         rows = room.get_all_roomtype()
         rows = outward(rows)
@@ -92,10 +96,10 @@ def select_roomtype():
                 session["enter_time"] = jsondata["enter_time"]
                 session["leave_time"] = jsondata["leave_time"]
                 session["room_type"] = jsondata["room_type"]
-            return jsonlify(url_for("order.select_room"))         #todo:返回可选房间页面
+            return jsonlify(url_for("order.select_room"))
         else:
             order_complete(session)
-            return jsonlify(url_for("order.select_room"))                 #todo:返回错误信息
+            return jsonlify(url_for("order.select_room"))  # todo:返回错误信息
 
 
 def check_for_selectroom(session):
@@ -113,7 +117,6 @@ def check_for_selectroom(session):
 def select_room():
     if check_for_selectroom(session):
         bookable_rooms = room.get_bookable_room(session["room_type"], session["enter_time"], session["leave_time"])
-        print("in select room", session["enter_time"], session["leave_time"])
         return render_template("select_room.html", bookable_rooms=bookable_rooms)
     else:
         return redirect(url_for("index.index"))
@@ -126,7 +129,7 @@ def order_complete(session):
     session.pop("room_id")
     session.pop("room_price")
     session.pop("total_price")
-    if session.get("pending_switch",None) is not None:
+    if session.get("pending_switch", None) is not None:
         session.pop("pending_switch")
 
 
@@ -134,6 +137,7 @@ def order_complete(session):
 def form_order(room_id):
     if room_id is None or not check_for_selectroom(session):
         return redirect(url_for("index.index"))
+
     if request.method == "GET":
         session["room_id"] = room_id
         settle_price(session)
@@ -143,16 +147,17 @@ def form_order(room_id):
         confirm_but = request.form.get("confirm_but", None)
         cancel_but = request.form.get("cancel_but", None)
         if confirm_but is not None:
-            print("oid", session.get("oid", None))
-            if session.get("oid", None) is not None:                   #换房的逻辑 将原有订单abort 然后生成新单
+            if session.get("oid", None) is not None:  # 换房的逻辑 将原有订单abort 然后生成新单
                 hotel_order.set_order_abort(session["uid"], session["oid"])
                 session.pop("oid")
             order = hotel_order(**session)
+            order.save()
             order_complete(session)
             return redirect(url_for("index.index"))
         elif cancel_but is not None:
             order_complete(session)
             return redirect(url_for("order.select_roomtype"))
+
 
 def settle_price(session):
     enter_time = session.get("enter_time")
@@ -160,9 +165,8 @@ def settle_price(session):
     room_type = session.get("room_type")
     enter = datetime.strptime(enter_time, "%Y-%m-%d")
     leave = datetime.strptime(leave_time, "%Y-%m-%d")
-    day = (leave-enter).days+1
+    day = (leave - enter).days + 1
     room_price = room.get_price_by_type(room_type)
     session["room_price"] = room_price
-    total_price = room_price*day
+    total_price = room_price * day
     session["total_price"] = total_price
-

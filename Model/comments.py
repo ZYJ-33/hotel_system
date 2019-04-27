@@ -2,12 +2,12 @@ from Model import Model
 
 
 class comments(Model):
-    def __init__(self, kargs):
-        self.com = kargs.get('com', None)
-        self.oid = kargs.get('oid', None)
-        self.room_type = kargs.get('room_type', None)
-        self.uid = kargs.get('uid', None)
-        self.username = kargs.get('username', None)
+    def __init__(self, form, **kargs):
+        self.com = form.get('com')
+        self.oid = kargs.pop('oid')
+        self.room_type = kargs.pop('room_type')
+        self.uid = kargs.pop('uid')
+        self.username = kargs.pop('username')
 
     @classmethod
     def get_comments_by_type(cls, room_type):

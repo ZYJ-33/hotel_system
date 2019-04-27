@@ -3,7 +3,6 @@ import pymysql
 import time
 from functions import roomtuple_tolist
 from config import sqlpass
-import datetime
 
 
 def deal_with_datetime(row_tuple):
@@ -164,6 +163,7 @@ class room(Model):
     @classmethod
     def get_booked_room_interface(cls, room_type, enter_date, leave_date):
         rows = room.get_room_booked(room_type)
+        print(rows)
         return room.result_from_bookedroom(enter_date, leave_date, rows)
 
     @classmethod
@@ -174,6 +174,7 @@ class room(Model):
             r = room_been_booked(rows[0][0])
             enter_date = time.strptime(enter_date, '%Y-%m-%d')
             leave_date = time.strptime(leave_date, '%Y-%m-%d')
+
             for row in rows:
                 if r.room_id == row[0]:
                     r.enter_dates.append(time.strptime(row[1], '%Y-%m-%d'))
@@ -183,7 +184,9 @@ class room(Model):
                     r = room_been_booked(row[0])
                     r.enter_dates.append(time.strptime(row[1], '%Y-%m-%d'))
                     r.leave_dates.append(time.strptime(row[2], '%Y-%m-%d'))
+
             total_room.append(r)
+
             for room_rep in total_room:
                 if room_rep.check_marginal(enter_date, leave_date):
                     room_result.append(room_rep.room_id)
@@ -194,6 +197,8 @@ class room(Model):
     @classmethod
     def check_booked(cls, room_rep, enter_date, leave_date):
         cloest_leave = room_rep.find_leavedate_cloest(enter_date)
+        if enter_date < cloest_leave:
+            return False
         cloest_start = room_rep.find_cloest_greater_date(room_rep.enter_dates, cloest_leave)
         if enter_date > cloest_leave and leave_date <cloest_start:
             return True
@@ -206,29 +211,29 @@ class room(Model):
         cursor.execute(sql, [enter_date])
         conn.commit()
         rows = cursor.fetchall()
-        l = []
+        l = []               #r.room_id, r.start_date, r.leave_date
         for row in rows:
-            if row[2].strftime("%Y-%m-%d") == enter_date:
+            if row[2].strftime("%Y-%m-%d") >= enter_date:
                 pass
             else:
                 l.append(row)
         rows = tuple(l)
         if len(rows) == 0:
             return []
+#        return tuple(ok_list), tuple(booked_list)
+
         else:
-            results = room.get_possible_booked(rows, conn, cursor)
-            if len(results) == 0:
-                l = []
-                for row in rows:
-                    l.append(row[0])
-                return l
-            results = deal_with_datetime(results)
-            result = room.result_from_bookedroom(enter_date, leave_date, results)
+            oks, bookeds = room.get_possible_booked(rows, conn, cursor)
+            bookeds = deal_with_datetime(bookeds)
+            result = room.result_from_bookedroom(enter_date, leave_date, bookeds)
+            for ok in oks:
+                result.append(ok[0])
             return result
 
     @classmethod
     def get_possible_booked(cls, rows, conn, cursor):
-        list = []
+        booked_list = []
+        ok_list = []
         for row in rows:
             sql = '''
                 SELECT o.room_id, o.enter_time, o.leave_time
@@ -238,9 +243,12 @@ class room(Model):
             cursor.execute(sql, [row[0]])
             conn.commit()
             result = cursor.fetchall()
-            for r in result:
-                list.append(r)
-        return tuple(list)
+            if len(result) > 0:
+                for r in result:
+                    booked_list.append(r)
+            else:
+                ok_list.append(row)
+        return tuple(ok_list), tuple(booked_list)
 
 
     @classmethod
@@ -248,6 +256,9 @@ class room(Model):
         al = room.get_available_room_interface(room_type)
         bl = room.get_booked_room_interface(room_type, enter_date, leave_date)
         ul = room.get_using_room_interface(room_type, enter_date, leave_date)
+        print("al ", al)
+        print("bl ", bl)
+        print("ul ", ul)
         return al+bl+ul
 
 

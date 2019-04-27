@@ -1,5 +1,6 @@
 from Model import Model
 import hashlib
+from functools import wraps
 
 def sha256_with_salt(str,salt):
     def sha256_hash(s):
@@ -48,6 +49,7 @@ class User(Model):
             return True
         return False
 
+
     @classmethod
     def get_user_by_username(cls, username):
         conn,cursor = Model.get_cursor()
@@ -84,6 +86,7 @@ class User(Model):
                     pass
                 else:
                     raise Exception
+
         self.hash_pass()
         self.save()
 
@@ -117,15 +120,12 @@ class User(Model):
         conn.commit()
         conn.close()
 
-
-
-    @classmethod
-    def is_admin(cls,**kargs):
+    @staticmethod
+    def is_admin(**kargs):
         if kargs.get("level") == 2:
             return True
         else:
             return False
-
 
 
 if __name__ == "__main__":
