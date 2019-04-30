@@ -64,15 +64,15 @@ def register():
     elif request.method == "POST":
         form = request.form
         form = todict(**form)
-    if check_regi_para(**form):
-        u = User(**form)
-        try:
-            u.register()
-        except pymysql.err.IntegrityError as e:
+        if check_regi_para(**form):
+            u = User(**form)
+            try:
+                u.register()
+            except pymysql.err.IntegrityError as e:
+                return redirect(url_for("User.register"))
+            return redirect(url_for("index.index"))
+        else:
             return redirect(url_for("User.register"))
-        return redirect(url_for("index.index"))
-    else:
-        return redirect(url_for("User.register"))
 
 
 @blueprint.route("/center", methods=["GET"])
