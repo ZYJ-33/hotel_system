@@ -10,7 +10,7 @@ from Router.admin import blueprint as adminRouter
 from Router.comments import blueprint as commentsRouter
 from Router.static import blueprint as staticRouter
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="/hotel")
 app.register_blueprint(UserRouter, url_prefix="/user")
 app.register_blueprint(orderRouter, url_prefix="/order")
 app.register_blueprint(adminRouter, url_prefix="/admin")
