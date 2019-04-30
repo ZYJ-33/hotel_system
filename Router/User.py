@@ -70,7 +70,7 @@ def register():
             u.register()
         except pymysql.err.IntegrityError as e:
             return redirect(url_for("User.register"))
-        return redirect(url_for("User.login"))
+        return redirect(url_for("index.index"))
     else:
         return redirect(url_for("User.register"))
 
