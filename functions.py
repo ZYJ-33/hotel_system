@@ -46,7 +46,7 @@ def order_pending_to_started():
     get_pending_sql = '''
         SELECT o.room_id, o.enter_time, o.leave_time, o.oid
         FROM hotel_order o 
-        WHERE o.order_status = 'pending' AND o.enter_time = current_date()
+        WHERE o.order_status = 'pending' AND o.enter_time <= current_date()
     '''
     cursor.execute(get_pending_sql)
     rows = cursor.fetchall()
